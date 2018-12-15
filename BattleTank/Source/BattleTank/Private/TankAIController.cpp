@@ -16,9 +16,10 @@ void ATankAIController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	auto Player = Cast<ATank>(GetWorld()->GetFirstPlayerController()->GetPawn());
-	if (Player)
+	if (ensure(Player))
 	{
 		//Move towards player
+		MoveToActor(Player, AcceptanceRadius);
 		//Aim at player
 		ATank* GamehendgeTank = Cast<ATank>(GetPawn());
 		GamehendgeTank->AimAt(Player->GetActorLocation());

@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "TankPlayerController.h"
+#include "TankAimingComponent.h"
 #include "Tank.h"
 #include "Engine/World.h"
 
@@ -8,11 +9,11 @@
 void ATankPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	UE_LOG(LogTemp, Warning, TEXT("PLayer Controller BeginPlay Method Logged to Gamehendge Mainframe"));
-
-	auto ControlledTank = GetControlledTank();
+	auto AimingComponent = GetControlledTank()->FindComponentByClass<UTankAimingComponent>();
+	if (!ensure(AimingComponent)) { return; }
+	FoundAimingComponent(AimingComponent);
 }
+
 
 void ATankPlayerController::Tick(float DeltaTime)
 {
@@ -24,6 +25,7 @@ void ATankPlayerController::Tick(float DeltaTime)
 
 ATank* ATankPlayerController::GetControlledTank() const
 {
+
 	ATank* GamehendgeTank = Cast<ATank>(GetPawn());
 	FString GamehendgeTankName = GamehendgeTank->GetName();
 
@@ -34,7 +36,8 @@ ATank* ATankPlayerController::GetControlledTank() const
 
 void ATankPlayerController::AimTowardsCrosshair()
 {
-	if (!GetControlledTank()) { return; }
+	if (!GetPawn()) { return; }
+	if (!ensure(GetControlledTank())) { return; }
 	
 	FVector HitLocation; //OUT param
 	if (GetSightRayHitLocation(HitLocation)) // Has "side effect", going to line trace
