@@ -2,6 +2,7 @@
 
 #include "TankAimingComponent.h"
 #include "Engine/World.h"
+#include "Projectile.h"
 #include "TankBarrel.h"
 #include "TankTurret.h"
 
@@ -24,9 +25,9 @@ void UTankAimingComponent::Initialise(UTankBarrel* BarrelToSet, UTankTurret* Tur
 	Turret = TurretToSet;
 }
 
-void UTankAimingComponent::AimAt(FVector HitLocation, float LanuchSpeed)
+void UTankAimingComponent::AimAt(FVector HitLocation)
 {
-	if (!ensure(Barrel))
+	if (!ensure(Barrel && ProjectileBlueprint))
 	{
 		return;
 	}
@@ -65,4 +66,25 @@ void UTankAimingComponent::MoveBarrelTowards(FVector AimDirection)
 
 	Barrel->Elevate(DeltaRotator.Pitch);
 	Turret->Rotate(DeltaRotator.Yaw);
+}
+
+void UTankAimingComponent::Fire()
+{
+	if (!ensure(Barrel)) { return; }
+
+	bool isReloaded = (FPlatformTime::Seconds() - LastFireTime) > ReloadTimeInSeconds;
+	if (isReloaded)
+	{
+		auto Projectile = GetWorld()->SpawnActor<AProjectile>(
+			ProjectileBlueprint,
+			Barrel->GetSocketLocation(FName("Projectile")),
+			Barrel->GetSocketRotation(FName("Projectile"))
+			);
+
+		Projectile->LanuchProjectile(LanuchSpeed);
+		LastFireTime = FPlatformTime::Seconds();
+	}
+	else {
+		return;
+	}
 }
